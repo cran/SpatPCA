@@ -1,0 +1,8 @@
+useDynLib(SpatPCA)
+exportPattern("^[[:alpha:]]+")
+S3method(plot,spatpca)
+export(cv.spatpca)
+export(spatpca)
+export(cv.covfn)
+importFrom(Rcpp, evalCpp)
+importFrom(fields, image.plot)
