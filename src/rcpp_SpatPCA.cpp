@@ -7,6 +7,7 @@
 // user includes
 using namespace arma;
 using namespace Rcpp;
+using namespace std;
 void spatPCAcore(const mat Y, mat& Phi, mat& R,  mat& C,  mat& Lambda1, mat& Lambda2, const mat Omega,const double tau1, const double tau2, double rho,const double rhoincre,const int maxit,const double tol){
     
     int p = Phi.n_rows;
@@ -51,15 +52,15 @@ void spatPCAcore(const mat Y, mat& Phi, mat& R,  mat& C,  mat& Lambda1, mat& Lam
                 Lambda1 = Lambda1old +rho*(Phi-R);
                 Lambda2 = Lambda2old +rho*(Phi-C);
                 
-                if(rho*rhoincre <= pow(10,10))
+                if(rho*rhoincre <= pow(10.0,10.0))
                     rho = rho*rhoincre;
                 else
-                    rho=pow(10,10);
+                    rho=pow(10.0,10.0);
                 
-                er[1] = arma::norm(Phi-R,"fro")/sqrt(p);
-                er[2] = arma::norm((R-Rold),"fro")/sqrt(p);
-                er[3] = arma::norm(Phi-C,"fro")/sqrt(p);
-                er[4] = arma::norm((C-Cold),"fro")/sqrt(p);
+                er[1] = arma::norm(Phi-R,"fro")/sqrt(p/1.0);
+                er[2] = arma::norm((R-Rold),"fro")/sqrt(p/1.0);
+                er[3] = arma::norm(Phi-C,"fro")/sqrt(p/1.0);
+                er[4] = arma::norm((C-Cold),"fro")/sqrt(p/1.0);
                 
                 if(max(er) <= tol)
                     break;
@@ -91,15 +92,15 @@ void spatPCAcore(const mat Y, mat& Phi, mat& R,  mat& C,  mat& Lambda1, mat& Lam
             Lambda1 = Lambda1old +rho*(Phi-R);
             Lambda2 = Lambda2old +rho*(Phi-C);
             
-            if(rho*rhoincre <= pow(10,10))
+            if(rho*rhoincre <= pow(10.0,10.0))
                 rho = rho*rhoincre;
             else
-                rho=pow(10,10);
+                rho=pow(10.0,10.0);
             
-            er[1] = arma::norm(Phi-R,"fro")/sqrt(p);
-            er[2] = arma::norm((R-Rold),"fro")/sqrt(p);
-            er[3] = arma::norm(Phi-C,"fro")/sqrt(p);
-            er[4] = arma::norm((C-Cold),"fro")/sqrt(p);
+            er[1] = arma::norm(Phi-R,"fro")/sqrt(p/1.0);
+            er[2] = arma::norm((R-Rold),"fro")/sqrt(p/1.0);
+            er[3] = arma::norm(Phi-C,"fro")/sqrt(p/1.0);
+            er[4] = arma::norm((C-Cold),"fro")/sqrt(p/1.0);
             
             if(max(er) <= tol)
                 break;
@@ -118,7 +119,9 @@ void spatPCAcore(const mat Y, mat& Phi, mat& R,  mat& C,  mat& Lambda1, mat& Lam
 // [[Rcpp::depends(RcppArmadillo)]]
 // user includes
 
+using namespace arma;
 using namespace Rcpp;
+using namespace std;
 // [[Rcpp::export]]
 arma::mat spatPCAcv_rcpp(const arma::mat Y, const int M, const int K, const arma::mat Omega, const arma::vec tau1, const arma::vec tau2, const arma::vec nk, const double rhoincre, const int maxit, const double tol){
     
@@ -134,7 +137,7 @@ arma::mat spatPCAcv_rcpp(const arma::mat Y, const int M, const int K, const arma
       Ytrain = Y.rows(arma::find(nk!=(k)));
       Yvalid = Y.rows(arma::find(nk==(k)));
       arma::svd_econ(UPhi, SPhi, Phiold, Ytrain);
-      rho = 10*pow(SPhi[0],2);
+      rho = 10*pow(SPhi[0],2.0);
       Phi = Phiold.cols(0,K-1);
       R = Phi;
       C = Phi;
@@ -143,14 +146,16 @@ arma::mat spatPCAcv_rcpp(const arma::mat Y, const int M, const int K, const arma
       for(unsigned int i = 0; i < tau1.n_elem; i++){
         for(unsigned int j = 0; j < tau2.n_elem; j++){      
           spatPCAcore(Ytrain,Phi,R,C,Lambda1,Lambda2, Omega, tau1[i],tau2[j], rho, rhoincre, maxit,tol);       
-          cv(i,j) += pow(arma::norm(Yvalid*(Ip-Phi*Phi.t()),"fro"),2);
+          cv(i,j) += pow(arma::norm(Yvalid*(Ip-Phi*Phi.t()),"fro"),2.0);
         }
       }
     }
     return(cv);
 }
 
+using namespace arma;
 using namespace Rcpp;
+using namespace std;
 // [[Rcpp::export]]
 arma::mat spatPCAcv_rcpp_parallel(const arma::mat Y, const int m, const int K, const arma::mat Omega, const arma::vec tau1, const arma::vec tau2, const arma::vec nk, const double rhoincre, const int maxit, const double tol){
       
@@ -164,7 +169,7 @@ arma::mat spatPCAcv_rcpp_parallel(const arma::mat Y, const int m, const int K, c
     Ytrain = Y.rows(arma::find(nk!=(m)));
     Yvalid = Y.rows(arma::find(nk==(m)));
     arma::svd_econ(UPhi, SPhi, Phiold, Ytrain);
-    rho = 10*pow(SPhi[0],2);
+    rho = 10*pow(SPhi[0],2.0);
     Phi = Phiold.cols(0,K-1);
     R = Phi;
     C = Phi;
@@ -173,7 +178,7 @@ arma::mat spatPCAcv_rcpp_parallel(const arma::mat Y, const int m, const int K, c
     for(unsigned int i = 0; i < tau1.n_elem; i++){
       for(unsigned int j = 0; j < tau2.n_elem; j++){      
         spatPCAcore(Ytrain,Phi,R,C,Lambda1,Lambda2, Omega, tau1[i],tau2[j], rho, rhoincre, maxit,tol);       
-        cv(i,j) += pow(arma::norm(Yvalid*(Ip-Phi*Phi.t()),"fro"),2);
+        cv(i,j) += pow(arma::norm(Yvalid*(Ip-Phi*Phi.t()),"fro"),2.0);
       }
     }
     
@@ -182,7 +187,9 @@ arma::mat spatPCAcv_rcpp_parallel(const arma::mat Y, const int m, const int K, c
 
 
 // [[Rcpp::export]]
+using namespace arma;
 using namespace Rcpp;
+using namespace std;
 arma::mat spatPCA_rcpp(const arma::mat Y, const int K, const arma::mat Omega, const double tau1, const arma::vec l2, const double rhoincre, const int maxit, const double tol){
     
     double rho;
@@ -211,7 +218,9 @@ arma::mat spatPCA_rcpp(const arma::mat Y, const int K, const arma::mat Omega, co
 
 
 // [[Rcpp::export]]
+using namespace arma;
 using namespace Rcpp;
+using namespace std;
 arma::vec spatPCAcv_gamma(const arma::mat Y, const arma::mat Phi, const int M, const arma::vec gamma, const arma::vec nk ){
   
   int p = Y.n_cols;
@@ -263,7 +272,7 @@ arma::vec spatPCAcv_gamma(const arma::mat Y, const arma::mat Phi, const int M, c
 
     eigenvalue = arma::max(Sc2-(err+gamma[gj])*Sct,Sctz);
     covest =  Phi*Vc2*diagmat(eigenvalue)*trans(Vc2)*trans(Phi);
-    cv[gj] += pow(arma::norm(covvalid-covest - err*Ip,"fro"),2);
+    cv[gj] += pow(arma::norm(covvalid-covest - err*Ip,"fro"),2.0);
     }
   }
   return(cv);

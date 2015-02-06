@@ -55,7 +55,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // spatPCA_rcpp
-using namespace Rcpp; arma::mat spatPCA_rcpp(const arma::mat Y, const int K, const arma::mat Omega, const double tau1, const arma::vec l2, const double rhoincre, const int maxit, const double tol);
+using namespace arma; using namespace Rcpp; using namespace std; arma::mat spatPCA_rcpp(const arma::mat Y, const int K, const arma::mat Omega, const double tau1, const arma::vec l2, const double rhoincre, const int maxit, const double tol);
 RcppExport SEXP SpatPCA_spatPCA_rcpp(SEXP YSEXP, SEXP KSEXP, SEXP OmegaSEXP, SEXP tau1SEXP, SEXP l2SEXP, SEXP rhoincreSEXP, SEXP maxitSEXP, SEXP tolSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
@@ -69,7 +69,7 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< const double >::type rhoincre(rhoincreSEXP );
         Rcpp::traits::input_parameter< const int >::type maxit(maxitSEXP );
         Rcpp::traits::input_parameter< const double >::type tol(tolSEXP );
-        using namespace Rcpp; arma::mat __result = spatPCA_rcpp(Y, K, Omega, tau1, l2, rhoincre, maxit, tol);
+        using namespace arma; using namespace Rcpp; using namespace std; arma::mat __result = spatPCA_rcpp(Y, K, Omega, tau1, l2, rhoincre, maxit, tol);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);
@@ -77,7 +77,7 @@ BEGIN_RCPP
 END_RCPP
 }
 // spatPCAcv_gamma
-using namespace Rcpp; arma::vec spatPCAcv_gamma(const arma::mat Y, const arma::mat Phi, const int M, const arma::vec gamma, const arma::vec nk);
+using namespace arma; using namespace Rcpp; using namespace std; arma::vec spatPCAcv_gamma(const arma::mat Y, const arma::mat Phi, const int M, const arma::vec gamma, const arma::vec nk);
 RcppExport SEXP SpatPCA_spatPCAcv_gamma(SEXP YSEXP, SEXP PhiSEXP, SEXP MSEXP, SEXP gammaSEXP, SEXP nkSEXP) {
 BEGIN_RCPP
     SEXP __sexp_result;
@@ -88,7 +88,7 @@ BEGIN_RCPP
         Rcpp::traits::input_parameter< const int >::type M(MSEXP );
         Rcpp::traits::input_parameter< const arma::vec >::type gamma(gammaSEXP );
         Rcpp::traits::input_parameter< const arma::vec >::type nk(nkSEXP );
-        using namespace Rcpp; arma::vec __result = spatPCAcv_gamma(Y, Phi, M, gamma, nk);
+        using namespace arma; using namespace Rcpp; using namespace std; arma::vec __result = spatPCAcv_gamma(Y, Phi, M, gamma, nk);
         PROTECT(__sexp_result = Rcpp::wrap(__result));
     }
     UNPROTECT(1);
