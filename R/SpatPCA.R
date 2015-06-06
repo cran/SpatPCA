@@ -175,7 +175,7 @@ eigenfn <- function(z, sx, sy = NULL, Phi){
 #' Regularized PCA for spatial data
 #'
 #' @description Produce spatial patterns at the coordinate grids according to a smoothness parameter tau1 and a sparseness parameter tau2.
-#' @param Y Data matrix (\eqn{n \times p}) stores the values at \eqn{p} grids with sample size \eqn{n}. If the dimension of grids are two, convert each sample to a vector form with length \eqn{p}.
+#' @param Y Data matrix (\eqn{n \times p}) stores the values at \eqn{p} locations with sample size \eqn{n}. If the dimension of grids are two, convert each sample to a vector form with length \eqn{p}.
 #' @param sx Numeric vector of \eqn{x}-coordinates of grids.
 #' @param sy Numeric vector of \eqn{y}-coordinates of grids. If NULL, it is a one-dimensional case.
 #' @param K User-supplied number of eigenfunctions.
@@ -264,7 +264,7 @@ spatpca <- function(Y, sx, sy = NULL, K, tau1, tau2, center = FALSE, maxit = 1e+
         }
     }
     
-    obj.spatPCA <- list(call=call, eigenfn = Phi, sx = sx.new, sy = sy.new, tau1 = tau1, tau2 = tau2, K = K, center = center)
+    obj.spatPCA <- list(call=call, eigenfn = Phi, Y = Y,sx = sx.new, sy = sy.new, tau1 = tau1, tau2 = tau2, K = K, center = center)
     
     class(obj.spatPCA) <- "spatpca"
     return(obj.spatPCA)
@@ -273,7 +273,7 @@ spatpca <- function(Y, sx, sy = NULL, K, tau1, tau2, center = FALSE, maxit = 1e+
 #' M-fold cross-validation for SpatPCA.
 #'
 #' @description Execute M-fold cross-validation to select the tuning parameters, tau1 and tau2, and produce the corresponding estimated eigenfunctions.
-#' @param Y Data matrix (\eqn{n \times p}) stores the values at \eqn{p} grids with sample size \eqn{n}. If the dimension of grids are two, convert each sample to a vector form with length \eqn{p}.
+#' @param Y Data matrix (\eqn{n \times p}) stores the values at \eqn{p} locations with sample size \eqn{n}. If the dimension of grids are two, convert each sample to a vector form with length \eqn{p}.
 #' @param sx Numeric vector of \eqn{x}-coordinates of grids.
 #' @param sy Numeric vector of \eqn{y}-coordinates of grids. If NULL, it is a one-dimensional case.
 #' @param M Optional number of folds; default is 5. Smallest value allowable is M=2.
@@ -397,7 +397,7 @@ cv.spatpca <- function(Y, sx, sy = NULL, M = 5, K, tau1 = NULL, tau2 = NULL, cen
     image.plot(tau1, tau2, cv/M, main = paste("CV score"), xlab = "tau1", ylab = "tau2")
   }
   
-  obj.cv <- list(call=call2, eigenfn.cv = est$eigen, tau1.cv = tau1[a1], tau2.cv = tau2[b1],cv = cv/M, tau1 = tau1, tau2 = tau2, K = K, center = center)
+  obj.cv <- list(call=call2, eigenfn.cv = est$eigen, tau1.cv = tau1[a1], tau2.cv = tau2[b1],cv = cv/M, tau1 = tau1, tau2 = tau2, Y = Y,sx = sx, sy = sy, K = K)
   class(obj.cv) <- "cv.spatpca"
   return(obj.cv)
 }
@@ -476,42 +476,40 @@ plot.spatpca <- function(x,...){
 #' cov.est <- cv.covfn(Y = Y.1D, basis = cv.1D)}
 #' @references Wang, W.-T., Huang, H.-C. (2015). Regularized Principal Component Analysis for Spatial Data. Manuscript.
 #' @export
-cv.covfn <- function(Y, basis, M = 5, gamma = NULL){
- 
+cv.covfn <- function(basis, M = 5, gamma = NULL){
+    Y <- basis$Y
     sx <- basis$sx
     sy <- basis$sy
     Phi <- basis$eigenfn
     K <- basis$K
     center <- basis$center
-     
-  if(center == TRUE)
-    Y <- Y - apply(Y, 2, "mean")
+    
 
-  n <- nrow(Y)
-  p <- ncol(Y)
-  covariance <- t(Y)%*%(Y)/n
+    n <- nrow(Y)
+    p <- ncol(Y)
+    covariance <- t(Y)%*%(Y)/n
   
-  if(is.null(gamma)) {
-    gsize <- 10
-    gammamax <- eigen(t(Phi)%*%covariance%*%Phi, symmetric = TRUE)$values[1]
-    gamma <- c(0,exp(seq(log(gammamax/1e3), log(gammamax), length = gsize-1)))
-  }
-  nk2 = sample(rep(1:5, length.out = n))
+    if(is.null(gamma)) {
+        gsize <- 10
+        gammamax <- eigen(t(Phi)%*%covariance%*%Phi, symmetric = TRUE)$values[1]
+        gamma <- c(0,exp(seq(log(gammamax/1e3), log(gammamax), length = gsize-1)))
+    }
+    nk2 = sample(rep(1:5, length.out = n))
   
-  cvgamma <-spatPCAcv_gamma(Y = Y, Phi = Phi, M = 5, gamma = gamma, nk = nk2)
+    cvgamma <-spatPCAcv_gamma(Y = Y, Phi = Phi, M = 5, gamma = gamma, nk = nk2)
   
-  for(l in 1:gsize)
-    if(min(cvgamma) == min(cvgamma[l]))
-      break
-  gamma.cv = gamma[l]
+    for(l in 1:gsize)
+        if(min(cvgamma) == min(cvgamma[l]))
+            break
+    gamma.cv = gamma[l]
   
-  ###covariance
-  temp = eigenest(Phi, covariance, gamma.cv)
-  err = temp$err
-  eigenvalueour = temp$eigenvalue
-  PhiourK1 = temp$Phi
-  cov.spatPCA = temp$Sigma
+    ###covariance
+    temp = eigenest(Phi, covariance, gamma.cv)
+    err = temp$err
+    eigenvalueour = temp$eigenvalue
+    PhiourK1 = temp$Phi
+    cov.spatPCA = temp$Sigma
   
 
-  return(list(cov = cov.spatPCA, gamma.cv = gamma.cv, cv = cvgamma, gamma=gamma))
+    return(list(cov = cov.spatPCA, gamma.cv = gamma.cv, cv = cvgamma, gamma=gamma))
 }

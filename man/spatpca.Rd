@@ -8,7 +8,7 @@ spatpca(Y, sx, sy = NULL, K, tau1, tau2, center = FALSE, maxit = 100, thr = 1e-0
  sx.new = NULL, sy.new = NULL)
 }
 \arguments{
-\item{Y}{Data matrix (\eqn{n \times p}) stores the values at \eqn{p} grids with sample size \eqn{n}.}
+\item{Y}{Data matrix (\eqn{n \times p}) stores the values at \eqn{p} locations with sample size \eqn{n}.}
 
 \item{sx}{Numeric vector of \eqn{x}-coordinates of grids.}
 
@@ -32,7 +32,7 @@ spatpca(Y, sx, sy = NULL, K, tau1, tau2, center = FALSE, maxit = 100, thr = 1e-0
 
 }
 \value{
-\item{eigenfn}{Estimated eigenfunctions at grids of sx.new and sy.new.}
+\item{eigenfn}{Estimated eigenfunctions at locations of sx.new and sy.new.}
 
 \item{sx.new}{Input vector of new \eqn{x}-coordinates, sx.new, used in the procedure.}
 
@@ -45,7 +45,7 @@ spatpca(Y, sx, sy = NULL, K, tau1, tau2, center = FALSE, maxit = 100, thr = 1e-0
 \item{K}{Input number of eigenfunctions.}
 }
 \description{
-Produce spatial patterns at the grids according to the smoothness parameter tau1 and the sparseness parameter tau2.
+Produce spatial patterns at the locations according to the smoothness parameter tau1 and the sparseness parameter tau2.
 }
 \details{
 An ADMM form of the proposed objective function is written as

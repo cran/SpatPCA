@@ -9,7 +9,7 @@ cv.spatpca(Y, sx, sy = NULL, M = 5, K, tau1 = NULL, tau2 = NULL,
   ...)
 }
 \arguments{
-\item{Y}{Data matrix (\eqn{n \times p}) stores the values at \eqn{p} grids with sample size \eqn{n}.}
+\item{Y}{Data matrix (\eqn{n \times p}) stores the values at \eqn{p} locations with sample size \eqn{n}.}
 
 \item{sx}{Numeric vector of \eqn{x}-coordinates of grids.}
 
@@ -34,7 +34,7 @@ cv.spatpca(Y, sx, sy = NULL, M = 5, K, tau1 = NULL, tau2 = NULL,
 \item{...}{Additional arguments passed to \code{\link{spatpca}}.}
 }
 \value{
-\item{eigenfn.cv}{Estimated eigenfunctions at the grids with respect to selected tuning parameters.}
+\item{eigenfn.cv}{Estimated eigenfunctions at the locations with respect to selected tuning parameters.}
 
 \item{tau1.cv}{Selected tau1.}
 

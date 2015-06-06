@@ -4,10 +4,9 @@
 \alias{cv.covfn}
 \title{M-fold cross-validation for covariance matrix estimation}
 \usage{
-cv.covfn(Y, basis, M = 5, gamma = NULL)
+cv.covfn(basis, M = 5, gamma = NULL)
 }
 \arguments{
-\item{Y}{Data matrix (\eqn{n \times p}) stores the values at \eqn{p} grids with sample size \eqn{n}.}
 
 \item{basis}{"cv.spatpca" object or "spatpca" object.}
 
@@ -16,7 +15,7 @@ cv.covfn(Y, basis, M = 5, gamma = NULL)
 \item{gamma}{Optional user-supplied numeric vector of a nonnegative tuning parameter sequence. If NULL, 10 values in a range are used.}
 }
 \value{
-\item{cov}{Estimated covariance matrix at the grids with respect to the selected tuning parameter.}
+\item{cov}{Estimated covariance matrix at the locations with respect to the selected tuning parameter.}
 
 \item{gamma.cv}{Selected gamma.}
 
@@ -34,7 +33,7 @@ s.1D <- as.matrix(seq(-5, 5, length = 50))
 Phi.true.1D <- exp(-s.1D^2)/norm(exp(-s.1D^2), "F")
 Y.1D <- rnorm(n = 100, sd = 3)\%*\%t(Phi.true.1D) + matrix(rnorm(n = 100*50), 100, 50)
 cv.1D <- cv.spatpca(Y = Y.1D, sx = s.1D, K = 3)
-cov.est <- cv.covfn(Y = Y.1D, basis = cv.1D)}
+cov.est <- cv.covfn(basis = cv.1D)}
 }
 \author{
 Wen-Ting Wang and Hsin-Cheng Huang
