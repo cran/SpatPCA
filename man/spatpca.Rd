@@ -4,48 +4,48 @@
 \alias{spatpca}
 \title{Regularized PCA for spatial data}
 \usage{
-spatpca(Y, sx, sy = NULL, K, tau1, tau2, center = FALSE, maxit = 100, thr = 1e-06,
- sx.new = NULL, sy.new = NULL)
+spatpca(x, Y, K = 1, tau1 = NULL, tau2 = NULL,  M = 5,
+  center = FALSE, x_new = NULL, plot.cv = FALSE, maxit = 50, thr = 1e-03)
 }
 \arguments{
+\item{x}{Location matrix (\eqn{p \times d}). Each row is a location. \eqn{d} is the dimension of locations}
+
 \item{Y}{Data matrix (\eqn{n \times p}) stores the values at \eqn{p} locations with sample size \eqn{n}.}
 
-\item{sx}{Numeric vector of \eqn{x}-coordinates of grids.}
+\item{K}{User-supplied number of eigenfunctions; default is 1.}
 
-\item{sy}{Numeric vector of \eqn{y}-coordinates of grids. If NULL, it is a one-dimensional case.}
+\item{tau1}{Optional user-supplied numeric vector of a nonnegative smoothness parameter sequence. If NULL, 10 tau1 values in a range are used.}
 
-\item{K}{User-supplied number of eigenfunctions.}
+\item{tau2}{Optional user-supplied numeric vector of a nonnegative sparseness parameter sequence. If NULL, none of tau2 is used.}
 
-\item{tau1}{User-supplied nonnegative smoothness parameter value.}
-
-\item{tau2}{User-supplied nonnegative sparseness parameter value.}
+\item{M}{Optional number of folds; default is 5.}
 
 \item{center}{If TRUE, center the columns of Y. Default is FALSE.}
 
-\item{maxit}{Maximum number of iterations. Default value is \eqn{10^2}.}
+\item{x_new}{New location matrix. If NULL, it is x.}
 
-\item{thr}{Threshold for convergence. Default value is \eqn{10^{-6}}.}
+\item{plot.cv}{If TRUE, plot the cv values. Default is FALSE.}
 
-\item{sx.new}{Numeric vector of new \eqn{x}-coordinates of grids. If NULL, it is sx.}
+\item{maxit}{Maximum number of iterations. Default value is 50.}
 
-\item{sy.new}{Numeric vector of new \eqn{y}-coordinates of grids. If NULL, it is sy.}
+\item{thr}{Threshold for convergence. Default value is \eqn{10^{-3}}.}
 
 }
 \value{
-\item{eigenfn}{Estimated eigenfunctions at locations of sx.new and sy.new.}
+\item{eigenfn}{Estimated eigenfunctions at the locations of x_new.}
 
-\item{sx.new}{Input vector of new \eqn{x}-coordinates, sx.new, used in the procedure.}
+\item{stau1}{Selected tau1.}
 
-\item{sy.new}{Input vector of new \eqn{y}-coordinates, sy.new, used in the procedure.}
+\item{stau2}{Selected tau2.}
 
-\item{tau1}{Input value of smoothness parameter.}
+\item{cv}{cv socres.}
 
-\item{tau2}{Input value of sparseness parameter.}
+\item{tau1}{Sequence of tau1-values used in the process.}
 
-\item{K}{Input number of eigenfunctions.}
+\item{tau2}{Sequence of tau2-values used in the process.}
 }
 \description{
-Produce spatial patterns at the locations according to the smoothness parameter tau1 and the sparseness parameter tau2.
+Produce spatial patterns at the locations OR new locations according to the specified tuning parameters or the selected tuning parameters by M-fold cross-validation.
 }
 \details{
 An ADMM form of the proposed objective function is written as
@@ -54,19 +54,46 @@ An ADMM form of the proposed objective function is written as
 }
 \examples{
 \dontrun{
-s.1D <- as.matrix(seq(-5, 5, length = 50))
-Phi.true.1D <- exp(-s.1D^2)/norm(exp(-s.1D^2), "F")
-Y.1D <- rnorm(n = 100, sd = 3)\%*\%t(Phi.true.1D) + matrix(rnorm(n = 100*50), 100, 50)
-Phi.est <- spatpca(Y = Y.1D, sx = s.1D, K = 1, tau1 = 10, tau2 = 10)
-plot(Phi.est)}}
+###### 1D: regular locations
+x_1D <- as.matrix(seq(-5, 5, length = 50))
+Phi_1D <- exp(-x_1D^2)/norm(exp(-x_1D^2), "F")
+Y_1D <- rnorm(n = 100, sd = 3)\%*\%t(Phi_1D) + matrix(rnorm(n = 100*50), 100, 50)
+cv_1D <- spatpca(x = x_1D, Y = Y_1D)
+plot(x_1D, cv_1D$eigenfn, type='l')
+
+### 1D: artificial irregular locations
+rm_loc <- sample(1:50, 20)
+x_1Drm <- x_1D[-rm_loc]
+Y_1Drm <- Y_1D[,-rm_loc]
+x_1Dnew <- as.matrix(seq(-5, 5, length = 100))
+cv_1D <- spatpca(x = x_1Drm, Y = Y_1Drm, tau2 = 1:100, x_new = x_1Dnew)
+plot(x_1Dnew, cv_1D$eigenfn, type = 'l')
+
+###### 2D: Daily 8-hour ozone averages for sites in the Midwest (USA)
+library(fields)
+data(ozone2)
+x <- ozone2$lon.lat
+Y <- ozone2$y
+rmna <- !colSums(is.na(Y))
+YY <- matrix(Y[, rmna], nrow=nrow(Y))
+xx <- x[rmna,]
+cv <- spatpca(x = xx, Y = YY, center = T)
+quilt.plot(xx, cv$eigenfn)
+map("state", xlim = range(xx[,1]), ylim = range(xx[,2]), add = T)
+map.text("state", xlim = range(xx[,1]), ylim = range(xx[,2]), cex = 2, add = T)
+
+### new loactions
+new_p = 200
+x_lon <- seq(min(xx[,1]), max(xx[,1]), length = new_p)
+x_lat <- seq(min(xx[,2]), max(xx[,2]), length = new_p)
+xx_new <- as.matrix(x = x_lon, y = x_lat)
+eof <- spatpca(x = xx, Y = YY, tau1 = cv$stau1, tau2 = cv$stau2, center = T, x_new = xx_new)
+quilt.plot(xx_new, eof$eigenfn, nx = new_p, ny = new_p, xlab = "longitude", ylab = "lattitude")
+map("state", xlim = range(x_lon), ylim = range(x_lat), add = T)
+map.text("state", xlim = range(x_lon), ylim = range(x_lat), cex = 2, add = T)}}
 \author{
 Wen-Ting Wang and Hsin-Cheng Huang
 }
 \references{
 Wang, W.-T. and Huang, H.-C. (2015). Regularized principal component analysis for spatial data. arXiv:1501.03221.
 }
-
-\seealso{
-\code{\link{cv.spatpca}}, \code{\link{plot.spatpca}}
-}
-

@@ -6,67 +6,59 @@
 
 using namespace Rcpp;
 
-// spatPCAcv_rcpp
-arma::mat spatPCAcv_rcpp(const arma::mat Y, const int M, const int K, const arma::mat Omega, const arma::vec tau1, const arma::vec tau2, const arma::vec nk, const double rhoincre, const int maxit, const double tol);
-RcppExport SEXP SpatPCA_spatPCAcv_rcpp(SEXP YSEXP, SEXP MSEXP, SEXP KSEXP, SEXP OmegaSEXP, SEXP tau1SEXP, SEXP tau2SEXP, SEXP nkSEXP, SEXP rhoincreSEXP, SEXP maxitSEXP, SEXP tolSEXP) {
+// tpm2
+arma::mat tpm2(const arma::mat z, const arma::mat P, const arma::mat Phi);
+RcppExport SEXP SpatPCA_tpm2(SEXP zSEXP, SEXP PSEXP, SEXP PhiSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< const arma::mat >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< const int >::type M(MSEXP);
-    Rcpp::traits::input_parameter< const int >::type K(KSEXP);
-    Rcpp::traits::input_parameter< const arma::mat >::type Omega(OmegaSEXP);
-    Rcpp::traits::input_parameter< const arma::vec >::type tau1(tau1SEXP);
-    Rcpp::traits::input_parameter< const arma::vec >::type tau2(tau2SEXP);
-    Rcpp::traits::input_parameter< const arma::vec >::type nk(nkSEXP);
-    Rcpp::traits::input_parameter< const double >::type rhoincre(rhoincreSEXP);
-    Rcpp::traits::input_parameter< const int >::type maxit(maxitSEXP);
-    Rcpp::traits::input_parameter< const double >::type tol(tolSEXP);
-    __result = Rcpp::wrap(spatPCAcv_rcpp(Y, M, K, Omega, tau1, tau2, nk, rhoincre, maxit, tol));
+    Rcpp::traits::input_parameter< const arma::mat >::type z(zSEXP);
+    Rcpp::traits::input_parameter< const arma::mat >::type P(PSEXP);
+    Rcpp::traits::input_parameter< const arma::mat >::type Phi(PhiSEXP);
+    __result = Rcpp::wrap(tpm2(z, P, Phi));
     return __result;
 END_RCPP
 }
-// spatPCAcv_rcpp_parallel
-arma::mat spatPCAcv_rcpp_parallel(const arma::mat Y, const int m, const int K, const arma::mat Omega, const arma::vec tau1, const arma::vec tau2, const arma::vec nk, const double rhoincre, const int maxit, const double tol);
-RcppExport SEXP SpatPCA_spatPCAcv_rcpp_parallel(SEXP YSEXP, SEXP mSEXP, SEXP KSEXP, SEXP OmegaSEXP, SEXP tau1SEXP, SEXP tau2SEXP, SEXP nkSEXP, SEXP rhoincreSEXP, SEXP maxitSEXP, SEXP tolSEXP) {
+// spatpcacv_rcpp
+List spatpcacv_rcpp(NumericMatrix sxyr, NumericMatrix Yr, int M, int K, NumericVector tau1r, NumericVector tau2r, NumericVector nkr, int maxit, double tol, NumericVector l2r);
+RcppExport SEXP SpatPCA_spatpcacv_rcpp(SEXP sxyrSEXP, SEXP YrSEXP, SEXP MSEXP, SEXP KSEXP, SEXP tau1rSEXP, SEXP tau2rSEXP, SEXP nkrSEXP, SEXP maxitSEXP, SEXP tolSEXP, SEXP l2rSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< const arma::mat >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< const int >::type m(mSEXP);
-    Rcpp::traits::input_parameter< const int >::type K(KSEXP);
-    Rcpp::traits::input_parameter< const arma::mat >::type Omega(OmegaSEXP);
-    Rcpp::traits::input_parameter< const arma::vec >::type tau1(tau1SEXP);
-    Rcpp::traits::input_parameter< const arma::vec >::type tau2(tau2SEXP);
-    Rcpp::traits::input_parameter< const arma::vec >::type nk(nkSEXP);
-    Rcpp::traits::input_parameter< const double >::type rhoincre(rhoincreSEXP);
-    Rcpp::traits::input_parameter< const int >::type maxit(maxitSEXP);
-    Rcpp::traits::input_parameter< const double >::type tol(tolSEXP);
-    __result = Rcpp::wrap(spatPCAcv_rcpp_parallel(Y, m, K, Omega, tau1, tau2, nk, rhoincre, maxit, tol));
+    Rcpp::traits::input_parameter< NumericMatrix >::type sxyr(sxyrSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type Yr(YrSEXP);
+    Rcpp::traits::input_parameter< int >::type M(MSEXP);
+    Rcpp::traits::input_parameter< int >::type K(KSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type tau1r(tau1rSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type tau2r(tau2rSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type nkr(nkrSEXP);
+    Rcpp::traits::input_parameter< int >::type maxit(maxitSEXP);
+    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type l2r(l2rSEXP);
+    __result = Rcpp::wrap(spatpcacv_rcpp(sxyr, Yr, M, K, tau1r, tau2r, nkr, maxit, tol, l2r));
     return __result;
 END_RCPP
 }
-// spatPCA_rcpp
-arma::mat spatPCA_rcpp(const arma::mat Y, const int K, const arma::mat Omega, const double tau1, const arma::vec l2, const double rhoincre, const int maxit, const double tol);
-RcppExport SEXP SpatPCA_spatPCA_rcpp(SEXP YSEXP, SEXP KSEXP, SEXP OmegaSEXP, SEXP tau1SEXP, SEXP l2SEXP, SEXP rhoincreSEXP, SEXP maxitSEXP, SEXP tolSEXP) {
+// spatpca_rcpp
+arma::mat spatpca_rcpp(const arma::mat sxy, const arma::mat Y, const int K, const double l1, const arma::vec l2, const int maxit, const double tol);
+RcppExport SEXP SpatPCA_spatpca_rcpp(SEXP sxySEXP, SEXP YSEXP, SEXP KSEXP, SEXP l1SEXP, SEXP l2SEXP, SEXP maxitSEXP, SEXP tolSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
+    Rcpp::traits::input_parameter< const arma::mat >::type sxy(sxySEXP);
     Rcpp::traits::input_parameter< const arma::mat >::type Y(YSEXP);
     Rcpp::traits::input_parameter< const int >::type K(KSEXP);
-    Rcpp::traits::input_parameter< const arma::mat >::type Omega(OmegaSEXP);
-    Rcpp::traits::input_parameter< const double >::type tau1(tau1SEXP);
+    Rcpp::traits::input_parameter< const double >::type l1(l1SEXP);
     Rcpp::traits::input_parameter< const arma::vec >::type l2(l2SEXP);
-    Rcpp::traits::input_parameter< const double >::type rhoincre(rhoincreSEXP);
     Rcpp::traits::input_parameter< const int >::type maxit(maxitSEXP);
     Rcpp::traits::input_parameter< const double >::type tol(tolSEXP);
-    __result = Rcpp::wrap(spatPCA_rcpp(Y, K, Omega, tau1, l2, rhoincre, maxit, tol));
+    __result = Rcpp::wrap(spatpca_rcpp(sxy, Y, K, l1, l2, maxit, tol));
     return __result;
 END_RCPP
 }
-// spatPCAcv_gamma
-arma::vec spatPCAcv_gamma(const arma::mat Y, const arma::mat Phi, const int M, const arma::vec gamma, const arma::vec nk);
-RcppExport SEXP SpatPCA_spatPCAcv_gamma(SEXP YSEXP, SEXP PhiSEXP, SEXP MSEXP, SEXP gammaSEXP, SEXP nkSEXP) {
+// spatpcacv_gamma
+arma::vec spatpcacv_gamma(const arma::mat Y, const arma::mat Phi, const int M, const arma::vec gamma, const arma::vec nk);
+RcppExport SEXP SpatPCA_spatpcacv_gamma(SEXP YSEXP, SEXP PhiSEXP, SEXP MSEXP, SEXP gammaSEXP, SEXP nkSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -75,7 +67,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const int >::type M(MSEXP);
     Rcpp::traits::input_parameter< const arma::vec >::type gamma(gammaSEXP);
     Rcpp::traits::input_parameter< const arma::vec >::type nk(nkSEXP);
-    __result = Rcpp::wrap(spatPCAcv_gamma(Y, Phi, M, gamma, nk));
+    __result = Rcpp::wrap(spatpcacv_gamma(Y, Phi, M, gamma, nk));
     return __result;
 END_RCPP
 }
