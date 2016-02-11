@@ -3,13 +3,13 @@
 \docType{package}
 \title{Regularized Principal Component Analysis for Spatial Data}
 \description{
-A new regularization approach to estimate the leading spatial patterns via smoothness and sparseness penalties for spatial data that may be irregularly located in space. 
+A new regularization approach to estimate the leading spatial patterns via smoothness and sparseness penalties , and spatial predctions for spatial data that may be irregularly located in space, and obtain the spatial prediction at the designated locations.
 }
 \details{\tabular{ll}{
 Package:\tab SpatPCA\cr
 Type:\tab  Package\cr
-Version:\tab   1.1.0.0\cr
-Date:\tab   2015-11-01\cr
+Version:\tab   1.1.1.0\cr
+Date:\tab   2016-02-06\cr
 License: \tab GPL version 2 or newer\cr
 }
 }

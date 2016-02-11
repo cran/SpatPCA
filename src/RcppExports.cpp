@@ -19,9 +19,9 @@ BEGIN_RCPP
     return __result;
 END_RCPP
 }
-// spatpcacv_rcpp
-List spatpcacv_rcpp(NumericMatrix sxyr, NumericMatrix Yr, int M, int K, NumericVector tau1r, NumericVector tau2r, NumericVector nkr, int maxit, double tol, NumericVector l2r);
-RcppExport SEXP SpatPCA_spatpcacv_rcpp(SEXP sxyrSEXP, SEXP YrSEXP, SEXP MSEXP, SEXP KSEXP, SEXP tau1rSEXP, SEXP tau2rSEXP, SEXP nkrSEXP, SEXP maxitSEXP, SEXP tolSEXP, SEXP l2rSEXP) {
+// spatpcacv2_rcpp
+List spatpcacv2_rcpp(NumericMatrix sxyr, NumericMatrix Yr, int M, int K, NumericVector tau1r, NumericVector tau2r, NumericVector gammar, NumericVector nkr, int maxit, double tol, NumericVector l2r);
+RcppExport SEXP SpatPCA_spatpcacv2_rcpp(SEXP sxyrSEXP, SEXP YrSEXP, SEXP MSEXP, SEXP KSEXP, SEXP tau1rSEXP, SEXP tau2rSEXP, SEXP gammarSEXP, SEXP nkrSEXP, SEXP maxitSEXP, SEXP tolSEXP, SEXP l2rSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
@@ -31,43 +31,26 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< int >::type K(KSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type tau1r(tau1rSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type tau2r(tau2rSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type gammar(gammarSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type nkr(nkrSEXP);
     Rcpp::traits::input_parameter< int >::type maxit(maxitSEXP);
     Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
     Rcpp::traits::input_parameter< NumericVector >::type l2r(l2rSEXP);
-    __result = Rcpp::wrap(spatpcacv_rcpp(sxyr, Yr, M, K, tau1r, tau2r, nkr, maxit, tol, l2r));
+    __result = Rcpp::wrap(spatpcacv2_rcpp(sxyr, Yr, M, K, tau1r, tau2r, gammar, nkr, maxit, tol, l2r));
     return __result;
 END_RCPP
 }
-// spatpca_rcpp
-arma::mat spatpca_rcpp(const arma::mat sxy, const arma::mat Y, const int K, const double l1, const arma::vec l2, const int maxit, const double tol);
-RcppExport SEXP SpatPCA_spatpca_rcpp(SEXP sxySEXP, SEXP YSEXP, SEXP KSEXP, SEXP l1SEXP, SEXP l2SEXP, SEXP maxitSEXP, SEXP tolSEXP) {
+// eigenest_rcpp
+List eigenest_rcpp(NumericMatrix phir, NumericMatrix Yr, double gamma, NumericMatrix phi2r);
+RcppExport SEXP SpatPCA_eigenest_rcpp(SEXP phirSEXP, SEXP YrSEXP, SEXP gammaSEXP, SEXP phi2rSEXP) {
 BEGIN_RCPP
     Rcpp::RObject __result;
     Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< const arma::mat >::type sxy(sxySEXP);
-    Rcpp::traits::input_parameter< const arma::mat >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< const int >::type K(KSEXP);
-    Rcpp::traits::input_parameter< const double >::type l1(l1SEXP);
-    Rcpp::traits::input_parameter< const arma::vec >::type l2(l2SEXP);
-    Rcpp::traits::input_parameter< const int >::type maxit(maxitSEXP);
-    Rcpp::traits::input_parameter< const double >::type tol(tolSEXP);
-    __result = Rcpp::wrap(spatpca_rcpp(sxy, Y, K, l1, l2, maxit, tol));
-    return __result;
-END_RCPP
-}
-// spatpcacv_gamma
-arma::vec spatpcacv_gamma(const arma::mat Y, const arma::mat Phi, const int M, const arma::vec gamma, const arma::vec nk);
-RcppExport SEXP SpatPCA_spatpcacv_gamma(SEXP YSEXP, SEXP PhiSEXP, SEXP MSEXP, SEXP gammaSEXP, SEXP nkSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject __result;
-    Rcpp::RNGScope __rngScope;
-    Rcpp::traits::input_parameter< const arma::mat >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< const arma::mat >::type Phi(PhiSEXP);
-    Rcpp::traits::input_parameter< const int >::type M(MSEXP);
-    Rcpp::traits::input_parameter< const arma::vec >::type gamma(gammaSEXP);
-    Rcpp::traits::input_parameter< const arma::vec >::type nk(nkSEXP);
-    __result = Rcpp::wrap(spatpcacv_gamma(Y, Phi, M, gamma, nk));
+    Rcpp::traits::input_parameter< NumericMatrix >::type phir(phirSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type Yr(YrSEXP);
+    Rcpp::traits::input_parameter< double >::type gamma(gammaSEXP);
+    Rcpp::traits::input_parameter< NumericMatrix >::type phi2r(phi2rSEXP);
+    __result = Rcpp::wrap(eigenest_rcpp(phir, Yr, gamma, phi2r));
     return __result;
 END_RCPP
 }

@@ -5,15 +5,11 @@ tpm2 <- function(z, P, Phi) {
     .Call('SpatPCA_tpm2', PACKAGE = 'SpatPCA', z, P, Phi)
 }
 
-spatpcacv_rcpp <- function(sxyr, Yr, M, K, tau1r, tau2r, nkr, maxit, tol, l2r) {
-    .Call('SpatPCA_spatpcacv_rcpp', PACKAGE = 'SpatPCA', sxyr, Yr, M, K, tau1r, tau2r, nkr, maxit, tol, l2r)
+spatpcacv2_rcpp <- function(sxyr, Yr, M, K, tau1r, tau2r, gammar, nkr, maxit, tol, l2r) {
+    .Call('SpatPCA_spatpcacv2_rcpp', PACKAGE = 'SpatPCA', sxyr, Yr, M, K, tau1r, tau2r, gammar, nkr, maxit, tol, l2r)
 }
 
-spatpca_rcpp <- function(sxy, Y, K, l1, l2, maxit, tol) {
-    .Call('SpatPCA_spatpca_rcpp', PACKAGE = 'SpatPCA', sxy, Y, K, l1, l2, maxit, tol)
-}
-
-spatpcacv_gamma <- function(Y, Phi, M, gamma, nk) {
-    .Call('SpatPCA_spatpcacv_gamma', PACKAGE = 'SpatPCA', Y, Phi, M, gamma, nk)
+eigenest_rcpp <- function(phir, Yr, gamma, phi2r) {
+    .Call('SpatPCA_eigenest_rcpp', PACKAGE = 'SpatPCA', phir, Yr, gamma, phi2r)
 }
 
