@@ -19,7 +19,7 @@ plot.cv = FALSE, maxit = 100, thr = 1e-04)
 
 \item{tau1}{Optional user-supplied numeric vector of a nonnegative smoothness parameter sequence. If NULL, 10 tau1 values in a range are used.}
 
-\item{tau2}{Optional user-supplied numeric vector of a nonnegative sparseness parameter sequence. If NULL, none of tau2 is used.}
+\item{tau2}{Optional user-supplied numeric vector of a nonnegative sparseness parameter sequence. If NULL, 10 tau2 values in a range are used.}
 
 \item{gamma}{Optional user-supplied numeric vector of a nonnegative tuning parameter sequence. If NULL, 10 values in a range are used.}
 
@@ -38,7 +38,7 @@ plot.cv = FALSE, maxit = 100, thr = 1e-04)
 \value{
 \item{eigenfn}{Estimated eigenfunctions at the new locations, x_new.}
 
-\item{Yhat}{Prediction of Y at the new locations, x_new.}
+\item{Yhat}{Predictions of Y at the new locations, x_new.}
 
 \item{stau1}{Selected tau1.}
 
@@ -57,62 +57,68 @@ plot.cv = FALSE, maxit = 100, thr = 1e-04)
 \item{tau2}{Sequence of tau2-values used in the process.}
 
 \item{gamma}{Sequence of gamma-values used in the process.}
+
+\item{Yc}{If center is TRUE, Yc is the centered Y; else, Yc is equal to Y.}
 }
 \description{
 Produce spatial patterns and spatial predictions at the designated locations according to the specified tuning parameters or the selected tuning parameters by M-fold cross-validation.
 }
 \details{
-An ADMM form of the proposed objective function is written as
+The proposed objective function is written as
 \deqn{\min_{\bm{\Phi}} \|\bm{Y}-\bm{Y}\bm{\Phi}\bm{\Phi}'\|^2_F +\tau_1\mbox{tr}(\bm{\Phi}^T\bm{\Omega}\bm{\Phi})+\tau_2\sum_{k=1}^K\sum_{j=1}^p |\phi_{jk}|,}
 \eqn{\mbox{subject to $ \bm{\Phi}^T\bm{\Phi}=\bm{I}_K$,}} where \eqn{\bm{Y}} is a data matrix, \eqn{{\bm{\Omega}}} is a smoothness matrix, and \eqn{\bm{\Phi}=\{\phi_{jk}\}}.
 }
 \examples{
-\dontrun{
 ###### 1D: regular locations
 x_1D <- as.matrix(seq(-5, 5, length = 50))
 Phi_1D <- exp(-x_1D^2)/norm(exp(-x_1D^2), "F")
 Y_1D <- rnorm(n = 100, sd = 3)\%*\%t(Phi_1D) + matrix(rnorm(n = 100*50), 100, 50)
 cv_1D <- spatpca(x = x_1D, Y = Y_1D)
-plot(x_1D, cv_1D$eigenfn, type='l', main="1st eigenfunction")
+plot(x_1D, cv_1D$eigenfn[,1], type='l', main = "1st eigenfunction")
 
 ### 1D: artificial irregular locations
 rm_loc <- sample(1:50, 20)
 x_1Drm <- x_1D[-rm_loc]
 Y_1Drm <- Y_1D[,-rm_loc]
 x_1Dnew <- as.matrix(seq(-5, 5, length = 100))
-cv_1D <- spatpca(x = x_1Drm, Y = Y_1Drm, tau2 = 1:100, x_new = x_1Dnew)
-cv_1D <- spatpca(x = x_1Drm, Y = Y_1Drm, tau2 = 1:100, x_new = x_1Dnew)
-plot(x_1Dnew, cv_1D$eigenfn, type = 'l', main="eigenfunction")
-plot(cv_1D$Yhat[,50], xlab = "n", ylab = "Yhat", type='l', 
-    main= paste("prediction at x = ", x_1Dnew[50]))
-
+cv_1Drm <- spatpca(x = x_1Drm, Y = Y_1Drm, x_new = x_1Dnew)
+plot(x_1Dnew, cv_1Drm$eigenfn[,1], type = 'l', main = "1st eigenfunction")
+plot(cv_1Drm$Yhat[,50], xlab = "index", ylab = "Yhat", type='l', 
+    main= paste("spatial predictions at location x = ", round(x_1Dnew[50],3)))
+\dontrun{
 ###### 2D: Daily 8-hour ozone averages for sites in the Midwest (USA)
 library(fields)
+library(pracma)
 data(ozone2)
 x <- ozone2$lon.lat
 Y <- ozone2$y
+date <- as.Date(ozone2$date, format = '\%y\%m\%d')
 rmna <- !colSums(is.na(Y))
 YY <- matrix(Y[, rmna], nrow=nrow(Y))
+YY <- detrend(YY, "linear")
 xx <- x[rmna,]
-cv <- spatpca(x = xx, Y = YY, center = T)
-quilt.plot(xx, cv$eigenfn)
+cv <- spatpca(x = xx, Y = YY)
+quilt.plot(xx, cv$eigenfn[,1], xlab = "lon.", ylab = "lat.", main
+= "1st eigenfunction")
 map("state", xlim = range(xx[,1]), ylim = range(xx[,2]), add = T)
 map.text("state", xlim = range(xx[,1]), ylim = range(xx[,2]), cex = 2, add = T)
+plot(date, YY\%*\%cv$eigenfn[,1], type = "l", ylab = "1st Principal Component")
 
 ### new loactions
 new_p = 200
 x_lon <- seq(min(xx[,1]), max(xx[,1]), length = new_p)
 x_lat <- seq(min(xx[,2]), max(xx[,2]), length = new_p)
 xx_new <- as.matrix(expand.grid(x = x_lon, y = x_lat))
-eof <- spatpca(x = xx, Y = YY, tau1 = cv$stau1, tau2 = cv$stau2, center = T, x_new = xx_new)
-quilt.plot(xx_new, eof$eigenfn, nx = new_p, ny = new_p, xlab = "lon.", ylab = "lat.")
+eof <- spatpca(x = xx, Y = YY, K = cv$Khat, tau1 = cv$stau1, tau2 = cv$stau2, x_new = xx_new)
+quilt.plot(xx_new, eof$eigenfn[,1], nx = new_p, ny = new_p, xlab = "lon.", 
+ylab = "lat.", main = "1st eigenfunction")
 map("state", xlim = range(x_lon), ylim = range(x_lat), add = T)
 map.text("state", xlim = range(x_lon), ylim = range(x_lat), cex = 2, add = T)}}
 \author{
 Wen-Ting Wang and Hsin-Cheng Huang
 }
 \references{
-Wang, W.-T. and Huang, H.-C. (2015). Regularized principal component analysis for spatial data. arXiv:1501.03221.
+Wang, W.-T. and Huang, H.-C. (2016+). Regularized principal component analysis for spatial data. \emph{Journal of Computational and Graphical Statistics}, to appear.
 
 Tzeng, S. and Huang, H.-C. (2015). Non-stationary multivariate spatial covariance estimation via low-rank regularization. \emph{Statistical Sinica} \bold{26} 151-172.
 

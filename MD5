@@ -1,13 +1,12 @@
-f2fa16f74e13ceb0c83cfb9056fd6b5a *DESCRIPTION
+682befbab5ba6be8b4c83e88d5780bbc *DESCRIPTION
 2ee5dc7c458bd31397c58bf5375a29db *NAMESPACE
 1554b1b73afb37a0036dd3665db7457b *R/RcppExports.R
-160155e2c5bfa8558a15517587277fca *R/SpatPCA.R
-9e0a8f3bd1b0db4b6ebb2e29ada16391 *man/SpatPCA-package.Rd
+c2974ca63a1e2d3ca9484c1d9673dd43 *R/SpatPCA.R
+feef41769b0fe5612ab974ff53321434 *man/SpatPCA-package.Rd
 3ba0af2b1ef48c18b6a14074d3f112e6 *man/SpatPCAinternal1.Rd
 37721204dfae622c79e70f2ef385f0fb *man/SpatPCAinternal2.Rd
 deaa9ed49065d6370fb17dd844ed17f7 *man/SpatPCAinternal3.Rd
-920eb489aa43c800b2aff5e26764bced *man/spatpca.Rd
+6658ba8dbd3243c0b2fb43bce91c354d *man/spatpca.Rd
 3115ba38d49113def2b2baf8df7d44ca *src/Makevars
-5014cd330fbdb0cfecb43ac3121d62c7 *src/Makevars.win
 92e85d79aa2d1c881c6138c421d411a9 *src/RcppExports.cpp
 9ecb6fc066f2de423acdfbda2297d478 *src/rcpp_SpatPCA.cpp
