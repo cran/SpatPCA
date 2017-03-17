@@ -20,6 +20,22 @@ spatpca <- function(x, Y, M = 5, K = NULL, K.select = ifelse(is.null(K),TRUE,FAL
   if(center == TRUE)
     Y = Y - apply(Y , 2, "mean")
   
+  if(is.null(tau2)) {
+    tau2 <- 0
+    ntau2 <- 1
+  }else{ 
+    ntau2 <- length(tau2)
+  }
+  tempegvl <- svd(Y)
+  egvl <- tempegvl$d[1]^2 
+  if(is.null(tau1)) {
+    ntau1 <- 11
+    max.tau1 <- egvl*sqrt(ncol(Y)/nrow(Y))
+    tau1 <- c(0,exp(seq(log(max.tau1/1e3), log(max.tau1), length = (ntau1-1))))   
+    
+  }else{
+    ntau1 <- length(tau1)
+  }
   if(M < 2 && (ntau1 > 1 || ntau2 > 1)) {
     ntau1 = 1
     ntau2 = 1
@@ -27,37 +43,13 @@ spatpca <- function(x, Y, M = 5, K = NULL, K.select = ifelse(is.null(K),TRUE,FAL
   }
   stra <- sample(rep(1:M, length.out = nrow(Y)))
   
-  tempegvl <- svd(Y)
-  egvl <- tempegvl$d[1]^2 
-  if(is.null(tau1)) {
-    ntau1 <- 21
-    max.tau1 <- egvl*sqrt(ncol(Y)/nrow(Y))
-    tau1 <- c(0,exp(seq(log(max.tau1/1e3), log(max.tau1), length = (ntau1-1))))   
-    
-  }else{
-    ntau1 <- length(tau1)
-  }
-  if(is.null(tau2)) {
-    ntau2 <- 11
-    dd <- t(Y)%*%Y
-    index <- sort(abs(tempegvl$v[,1]),decreasing=T,index.return=T)$ix
-    nu1 <- index[2]
-    nu2 <- index[ncol(Y)]
-    max.tau2 <- abs(2*dd[,nu1]%*%tempegvl$v[,1])
-    min.tau2 <- abs(2*dd[,nu2]%*%tempegvl$v[,1])
-    tau2 <- c(0,exp(seq(log(min.tau2), log(max.tau2), length = (ntau2-1))))   
-    
-  }else{ 
-    ntau2 <- length(tau2)
-  }
-  
-  
   if(is.null(gamma)){
     gsize <- 11
     temp <- svd(Y[which(stra!=1),])
     gammamax1 <- temp$d[1]^2/nrow(Y[which(stra!=1),])
     gamma <- c(0,exp(seq(log(gammamax1/1e3), log(gammamax1), length = gsize-1)))
   }
+  
   
   if(ntau2 ==1 && tau2 > 0){
     if(tau2 !=0)
@@ -107,14 +99,14 @@ spatpca <- function(x, Y, M = 5, K = NULL, K.select = ifelse(is.null(K),TRUE,FAL
   if(plot.cv == TRUE && !is.null(cv1)){
     if(ntau2 >1){
       par(mfrow=c(3,1))
-      plot(tau1,cv1,type='l',main="tau1 selection given tau2 = 0")
-      plot(tau2,cv2,type='l',main="tau2 selection given selected tau1")
-      plot(gamma,cv3,type='l',main="gamma selection given selected tau1 and tau2")
+      plot(tau1,cv1,type='l',main="for tau1 selection given tau2 = 0")
+      plot(tau2,cv2,type='l',main="for tau2 selection given selected tau1")
+      plot(gamma,cv3,type='l',main="for gamma selection given selected tau1 and tau2")
     }
     else{
       par(mfrow=c(2,1))
-      plot(tau1,cv1,type='l',main="tau1 selection given tau2 = 0")
-      plot(gamma,cv3,type='l',main="gamma selection given selected tau1 and tau2")
+      plot(tau1,cv1,type='l',main="for tau1 selection given tau2 = 0")
+      plot(gamma,cv3,type='l',main="for gamma selection given selected tau1 and tau2")
     }
   }
   
