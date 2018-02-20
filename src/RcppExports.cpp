@@ -6,9 +6,20 @@
 
 using namespace Rcpp;
 
+// tpmatrix
+arma::mat tpmatrix(const arma::mat P);
+RcppExport SEXP _SpatPCA_tpmatrix(SEXP PSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat >::type P(PSEXP);
+    rcpp_result_gen = Rcpp::wrap(tpmatrix(P));
+    return rcpp_result_gen;
+END_RCPP
+}
 // tpm2
 arma::mat tpm2(const arma::mat z, const arma::mat P, const arma::mat Phi);
-RcppExport SEXP SpatPCA_tpm2(SEXP zSEXP, SEXP PSEXP, SEXP PhiSEXP) {
+RcppExport SEXP _SpatPCA_tpm2(SEXP zSEXP, SEXP PSEXP, SEXP PhiSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -21,7 +32,7 @@ END_RCPP
 }
 // spatpcacv2_rcpp
 List spatpcacv2_rcpp(NumericMatrix sxyr, NumericMatrix Yr, int M, int K, NumericVector tau1r, NumericVector tau2r, NumericVector gammar, NumericVector nkr, int maxit, double tol, NumericVector l2r);
-RcppExport SEXP SpatPCA_spatpcacv2_rcpp(SEXP sxyrSEXP, SEXP YrSEXP, SEXP MSEXP, SEXP KSEXP, SEXP tau1rSEXP, SEXP tau2rSEXP, SEXP gammarSEXP, SEXP nkrSEXP, SEXP maxitSEXP, SEXP tolSEXP, SEXP l2rSEXP) {
+RcppExport SEXP _SpatPCA_spatpcacv2_rcpp(SEXP sxyrSEXP, SEXP YrSEXP, SEXP MSEXP, SEXP KSEXP, SEXP tau1rSEXP, SEXP tau2rSEXP, SEXP gammarSEXP, SEXP nkrSEXP, SEXP maxitSEXP, SEXP tolSEXP, SEXP l2rSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -42,7 +53,7 @@ END_RCPP
 }
 // eigenest_rcpp
 List eigenest_rcpp(NumericMatrix phir, NumericMatrix Yr, double gamma, NumericMatrix phi2r);
-RcppExport SEXP SpatPCA_eigenest_rcpp(SEXP phirSEXP, SEXP YrSEXP, SEXP gammaSEXP, SEXP phi2rSEXP) {
+RcppExport SEXP _SpatPCA_eigenest_rcpp(SEXP phirSEXP, SEXP YrSEXP, SEXP gammaSEXP, SEXP phi2rSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -53,4 +64,17 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(eigenest_rcpp(phir, Yr, gamma, phi2r));
     return rcpp_result_gen;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_SpatPCA_tpmatrix", (DL_FUNC) &_SpatPCA_tpmatrix, 1},
+    {"_SpatPCA_tpm2", (DL_FUNC) &_SpatPCA_tpm2, 3},
+    {"_SpatPCA_spatpcacv2_rcpp", (DL_FUNC) &_SpatPCA_spatpcacv2_rcpp, 11},
+    {"_SpatPCA_eigenest_rcpp", (DL_FUNC) &_SpatPCA_eigenest_rcpp, 4},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_SpatPCA(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }
