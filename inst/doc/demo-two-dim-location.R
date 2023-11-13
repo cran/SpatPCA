@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -24,12 +24,12 @@ fill_bar <- guides(fill = guide_colourbar(
     label.position = "bottom")
   )
 coltab <- scico(128, palette = 'vik')
-color_scale_limit <- c(-.28, .28)
+color_scale_limit <- c(-.8, .8)
 
-## ---- out.width = '100%'------------------------------------------------------
+## ----out.width = '100%'-------------------------------------------------------
 set.seed(1024)
-p <- 30
-n <- 50
+p <- 25
+n <- 8
 location <-
   matrix(rep(seq(-5, 5, length = p), 2), nrow = p, ncol = 2)
 expanded_location <- expand.grid(location[, 1], location[, 2])
@@ -52,9 +52,10 @@ data.frame(
 
 
 ## -----------------------------------------------------------------------------
-realizations <- rnorm(n = n, sd = 10) %*% t(true_eigen_fn) + matrix(rnorm(n = n * p^2), n, p^2)
+realizations <- rnorm(n = n, sd = 3) %*% t(true_eigen_fn) + matrix(rnorm(n = n * p^2), n, p^2)
 
-## ---- animation.hook="gifski", out.width = '100%'-----------------------------
+## ----animation.hook="gifski", out.width = '100%'------------------------------
+original_par <- par()
 for (i in 1:n) {
   par(mar = c(3, 3, 1, 1), family = "Times")
   image.plot(
@@ -69,13 +70,14 @@ for (i in 1:n) {
     legend.width=0.5
   )
 }
+par(original_par)
 
 ## -----------------------------------------------------------------------------
 tau2 <- c(0, exp(seq(log(10), log(400), length = 10)))
 cv <- spatpca(x = expanded_location, Y = realizations, tau2 = tau2)
 eigen_est <- cv$eigenfn
 
-## ---- out.width = '100%'------------------------------------------------------
+## ----out.width = '100%'-------------------------------------------------------
 data.frame(
   location_dim1 = expanded_location[, 1],
   location_dim2 = expanded_location[, 2],

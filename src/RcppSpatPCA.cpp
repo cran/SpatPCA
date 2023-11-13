@@ -6,6 +6,7 @@
 #include <Rcpp.h>
 #include <iostream>
 // [[Rcpp::depends(RcppArmadillo)]]
+// [[Rcpp::plugins(cpp17)]]                                        
 
 using namespace Rcpp;
 using namespace std;
@@ -20,7 +21,7 @@ struct thinPlateSpline: public RcppParallel::Worker {
 
   void operator()(std::size_t begin, std::size_t end) {
     for(std::size_t i = begin; i < end; i++) {
-      for(unsigned j = 0; j < p; ++j) {
+      for(int j = 0; j < p; ++j) {
         if(j > i) {
           if(d == 1) {
             double r = sqrt(pow(P(i, 0) - P(j, 0), 2));
@@ -40,7 +41,7 @@ struct thinPlateSpline: public RcppParallel::Worker {
       }  
       
       L(i, p) = 1;
-      for(unsigned k = 0; k < d; ++k)
+      for(int k = 0; k < d; ++k)
         L(i, p + k + 1) = P(i, k);
     }
   }
@@ -48,7 +49,7 @@ struct thinPlateSpline: public RcppParallel::Worker {
 
 //' @title Thin-plane spline matrix
 //' 
-//' @description Produce a thin-plane spline matrix based on a given location matric
+//' @description Produce a thin-plane spline matrix based on a given location matrix
 //' 
 //' @param location A location matrix
 //' @return A thin-plane spline matrix
@@ -84,7 +85,7 @@ arma::mat thinPlateSplineMatrix(const arma::mat location) {
 //' @param new_location A location matrix
 //' @param original_location A location matrix
 //' @param Phi An eigenvector matrix
-//' @return A predictive estimte matrix
+//' @return A predictive estimate matrix
 //' @examples
 //' pesudo_sequence <- seq(-5, 5, length = 2)
 //' original_location <- as.matrix(expand.grid(x = pesudo_sequence, y = pesudo_sequence))
@@ -109,37 +110,37 @@ arma::mat eigenFunction(const arma::mat new_location, const arma::mat original_l
   mat eigen_fn(pnew, K);
   double psum, r;
 
-  for(unsigned newi = 0; newi < pnew ; newi++) {
-    for(unsigned i = 0; i < K; i++) {
+  for(int new_i = 0; new_i < pnew ; new_i++) {
+    for(int i = 0; i < K; i++) {
       psum = 0;
-      for(unsigned j = 0; j < p; j++) {
+      for(int j = 0; j < p; j++) {
         if(d == 1) {  
-          r = norm(new_location.row(newi) - original_location.row(j), "f");
+          r = norm(new_location.row(new_i) - original_location.row(j), "f");
           if(r != 0)
             psum += para(j, i) * pow(r, 3) / 12;
         }
         else if(d == 2) {
-          r = sqrt(pow(new_location(newi, 0) - original_location(j, 0), 2) + 
-            (pow(new_location(newi, 1) - original_location(j, 1), 2)));
+          r = sqrt(pow(new_location(new_i, 0) - original_location(j, 0), 2) + 
+            (pow(new_location(new_i, 1) - original_location(j, 1), 2)));
           if(r != 0)
             psum += para(j, i) * r * r * log(r) / (8.0 * datum::pi);
         }
         else if(d == 3) {
-          double r = sqrt(pow(new_location(newi, 0) - original_location(j, 0), 2) +
-                          pow(new_location(newi, 1) - original_location(j, 1), 2) +
-                          pow(new_location(newi, 2) - original_location(j, 2), 2));
+          double r = sqrt(pow(new_location(new_i, 0) - original_location(j, 0), 2) +
+                          pow(new_location(new_i, 1) - original_location(j, 1), 2) +
+                          pow(new_location(new_i, 2) - original_location(j, 2), 2));
           if(r != 0)
             psum -= para(j, i) * r / (8.0 * datum::pi);
         }
       }
       if(d == 1)
-        eigen_fn(newi, i) = psum + para(p + 1, i) * new_location(newi, 0) + para(p, i);
+        eigen_fn(new_i, i) = psum + para(p + 1, i) * new_location(new_i, 0) + para(p, i);
       else if(d == 2)
-        eigen_fn(newi, i) = psum + para(p + 1, i) * new_location(newi, 0) +
-          para(p + 2, i) * new_location(newi, 1) + para(p, i);
+        eigen_fn(new_i, i) = psum + para(p + 1, i) * new_location(new_i, 0) +
+          para(p + 2, i) * new_location(new_i, 1) + para(p, i);
       else if(d == 3)
-        eigen_fn(newi, i) = psum + para(p + 1, i) * new_location(newi, 0) +
-          para(p + 2, i) * new_location(newi, 1) + para(p + 3, i) * new_location(newi, 2) + para(p, i); 
+        eigen_fn(new_i, i) = psum + para(p + 1, i) * new_location(new_i, 0) +
+          para(p + 2, i) * new_location(new_i, 1) + para(p + 3, i) * new_location(new_i, 2) + para(p, i); 
     }
   }
   
@@ -461,10 +462,10 @@ struct spatpcaCVPhi3: public RcppParallel::Worker {
     for(std::size_t k = begin; k < end; k++) {
       int p = Y.n_cols, tempL, K;
       mat  Phi, C, Ip, Lambda2;
-      mat Vc, Vc2, covariance_mtraix_train, covariance_mtraix_validation, estimated_covariance, eigenvalue;
+      mat transformed_eigenvectors, decreasing_transformed_eigenvectors, covariance_mtraix_train, covariance_mtraix_validation, estimated_covariance, eigenvalue;
       mat Y_validation = Y.rows(find(nk == (k + 1)));
-      vec Sc, Sc2, Sct, Sctz, cv;
-      double total_variance, error, temp, tempSc, tempSc2;
+      vec transformed_eigenvalues, decreasing_transformed_eigenvalues, one_vector, zero_vector, cv;
+      double total_variance, error, temp, total_transformed_eigenvalues, previous_total_transformed_eigenvalues;
 
       Ip.eye(Y.n_cols, Y.n_cols);
       Phi = C = Phi_cv.slice(k);
@@ -490,36 +491,36 @@ struct spatpcaCVPhi3: public RcppParallel::Worker {
       covariance_mtraix_train = gram_matrix_Y_train.slice(k) / (Y.n_rows - Y_validation.n_rows);
       covariance_mtraix_validation = trans(Y_validation) * Y_validation / Y_validation.n_rows;
       total_variance = trace(covariance_mtraix_train);
-      eig_sym(Sc, Vc, trans(Phi) * covariance_mtraix_train * Phi);
-      tempSc2 = accu(Sc);
-      Sc2 = sort(Sc,"descend");
-      Vc2 = Vc.cols(sort_index(Sc,"descend"));
-      Sct.ones(Sc2.n_elem);
-      Sctz.zeros(Sc2.n_elem);
+      eig_sym(transformed_eigenvalues, transformed_eigenvectors, trans(Phi) * covariance_mtraix_train * Phi);
+      previous_total_transformed_eigenvalues = accu(transformed_eigenvalues);
+      decreasing_transformed_eigenvalues = sort(transformed_eigenvalues,"descend");
+      decreasing_transformed_eigenvectors = transformed_eigenvectors.cols(sort_index(transformed_eigenvalues,"descend"));
+      one_vector.ones(decreasing_transformed_eigenvalues.n_elem);
+      zero_vector.zeros(decreasing_transformed_eigenvalues.n_elem);
 
-      for(unsigned int gj = 0; gj < gamma.n_elem; gj++) {
-        tempSc = tempSc2;
+      for(int gj = 0; gj < gamma.n_elem; gj++) {
+        total_transformed_eigenvalues = previous_total_transformed_eigenvalues;
         tempL = K;
-        if(Sc2[0] > gamma[gj]) {
-          error = (total_variance - tempSc + K * gamma[gj]) / (p - tempL);
-          temp = Sc2[tempL - 1];
+        if(decreasing_transformed_eigenvalues[0] > gamma[gj]) {
+          error = (total_variance - total_transformed_eigenvalues + K * gamma[gj]) / (p - tempL);
+          temp = decreasing_transformed_eigenvalues[tempL - 1];
           while(temp - gamma[gj] < error) {
             if(tempL == 1) {
-              error = (total_variance - Sc2[0] + gamma[gj]) / (p - 1);
+              error = (total_variance - decreasing_transformed_eigenvalues[0] + gamma[gj]) / (p - 1);
               break;
             }
-            tempSc -= Sc2[tempL - 1];
+            total_transformed_eigenvalues -= decreasing_transformed_eigenvalues[tempL - 1];
             tempL --;
-            error = (total_variance - tempSc + tempL * gamma[gj]) / (p - tempL);
-            temp = Sc2[tempL - 1];
+            error = (total_variance - total_transformed_eigenvalues + tempL * gamma[gj]) / (p - tempL);
+            temp = decreasing_transformed_eigenvalues[tempL - 1];
           }
-          if(Sc2[0] - gamma[gj] < error)
+          if(decreasing_transformed_eigenvalues[0] - gamma[gj] < error)
             error = total_variance / p;
         }
         else
           error = total_variance / p;
-        eigenvalue = max(Sc2 - (error + gamma[gj]) * Sct, Sctz);
-        estimated_covariance =  Phi * Vc2 * diagmat(eigenvalue) * trans(Vc2) * trans(Phi);
+        eigenvalue = max(decreasing_transformed_eigenvalues - (error + gamma[gj]) * one_vector, zero_vector);
+        estimated_covariance =  Phi * decreasing_transformed_eigenvectors * diagmat(eigenvalue) * trans(decreasing_transformed_eigenvectors) * trans(Phi);
         output(k, gj) = pow(norm(covariance_mtraix_validation - estimated_covariance - error * Ip, "fro"), 2.0);
       }
     }
@@ -583,7 +584,7 @@ List spatpcaCV(
       mat Y_train, Y_validation; 
       mat svd_U, Phi_oldg;
       vec singular_value;
-      for(unsigned k = 0; k < M; ++k) {
+      for(int k = 0; k < M; ++k) {
         Y_train = Y.rows(find(nk != (k + 1)));
         Y_validation = Y.rows(find(nk == (k + 1)));
         svd_econ(svd_U, singular_value, Phi_oldg, Y_train, "right");
@@ -611,7 +612,7 @@ List spatpcaCV(
       mat svd_U, Phi_oldg;
       vec singular_value;
 
-      for(unsigned k = 0; k < M; ++k) {
+      for(int k = 0; k < M; ++k) {
         Y_train = Y.rows(find(nk != (k + 1)));
         gram_matrix_Y_train.slice(k) = Y_train.t() * Y_train;
         svd_econ(svd_U, singular_value, Phi_oldg, Y_train, "right");
@@ -634,14 +635,14 @@ List spatpcaCV(
       mat Phigg, Cgg, Lambda2gg;
       mat Y_validation, Y_train;
       mat svd_U, Phi_oldg;
-      vec singular_value;
+      vec singular_values;
 
-      for(unsigned k = 0; k < M; ++k) {
+      for(int k = 0; k < M; ++k) {
         Y_train = Y.rows(find(nk != (k + 1)));
         gram_matrix_Y_train.slice(k) = Y_train.t() * Y_train;
-        svd_econ(svd_U, singular_value, Phi_oldg, Y_train, "right");
+        svd_econ(svd_U, singular_values, Phi_oldg, Y_train, "right");
         Phigg = Cgg = Phi_oldg.cols(0, K - 1);
-        rho_cv(k, 0) = 10 * pow(singular_value[0], 2.0);
+        rho_cv(k, 0) = 10 * pow(singular_values[0], 2.0);
         Lambda2gg = Phigg * (diagmat(rho_cv(k, 0) - 1 / (rho_cv(k, 0) - 2 * pow(singular_value.subvec(0, K - 1), 2))));
         if(selected_tau1 != 0)
           spatpcaCore2(gram_matrix_Y_train.slice(k), Phigg, Cgg, Lambda2gg, Omega, selected_tau1, rho_cv(k, 0), maxit, tol);
@@ -705,12 +706,12 @@ List spatpcaCV(
 //' @keywords internal
 //' @param phir A matrix of estimated eigenfunctions based on original locations
 //' @param Yr A data matrix
-//' @param gammar A gamma value
+//' @param gamma A gamma value
 //' @param predicted_eignefunction A vector of values of an eigenfunction on new locations
 //' @return A list of objects
-//' \item{prediction}{A vector of spatial predicitons}
+//' \item{prediction}{A vector of spatial predictions}
 //' \item{estimated_covariance}{An estimated covariance matrix.}
-//' \item{eigenvalue}{A vecotor of estimated eigenvalues.}
+//' \item{eigenvalue}{A vector of estimated eigenvalues.}
 //' \item{error}{Error rate for the ADMM algorithm}
 // [[Rcpp::export]]
 List spatialPrediction(NumericMatrix phir, NumericMatrix Yr, double gamma, NumericMatrix predicted_eignefunction) {
@@ -718,46 +719,46 @@ List spatialPrediction(NumericMatrix phir, NumericMatrix Yr, double gamma, Numer
   mat phi(phir.begin(), p, K, false);
   mat predicted_phi(predicted_eignefunction.begin(), p2, K, false);
   mat Y(Yr.begin(), n, p, false);
-  mat Vc, Vc2;
-  vec Sc, Sc2;
+  mat transformed_eigenvectors, decreasing_transformed_eigenvectors;
+  vec transformed_eigenvalues, decreasing_transformed_eigenvalues;
   
   mat cov = Y.t() * Y / n;
-  eig_sym(Sc, Vc, phi.t() * cov * phi);
+  eig_sym(transformed_eigenvalues, transformed_eigenvectors, phi.t() * cov * phi);
   int tempL = K;
   double total_variance = trace(cov);
-  double tempSc2 = accu(Sc);
-  double temp_v = total_variance - tempSc2;
+  double previous_total_transformed_eigenvalues = accu(transformed_eigenvalues);
+  double temp_v = total_variance - previous_total_transformed_eigenvalues;
   double error = (temp_v + K * gamma) / (p - tempL);
   
-  Sc2 = sort(Sc, "descend");
-  Vc2 = Vc.cols(sort_index(Sc, "descend"));
-  double tempSc = tempSc2, temp;
-  mat Sct, Sctz;
-  Sct.ones(Sc2.n_elem);
-  Sctz.zeros(Sc2.n_elem);
+  decreasing_transformed_eigenvalues = sort(transformed_eigenvalues, "descend");
+  decreasing_transformed_eigenvectors = transformed_eigenvectors.cols(sort_index(transformed_eigenvalues, "descend"));
+  double total_transformed_eigenvalues = previous_total_transformed_eigenvalues, temp;
+  mat one_vector, zero_vector;
+  one_vector.ones(decreasing_transformed_eigenvalues.n_elem);
+  zero_vector.zeros(decreasing_transformed_eigenvalues.n_elem);
   
-  if(Sc2[0] > gamma) {
-    error = (total_variance - tempSc + K * gamma) / (p - tempL);
-    temp = Sc2[tempL - 1];  
+  if(decreasing_transformed_eigenvalues[0] > gamma) {
+    error = (total_variance - total_transformed_eigenvalues + K * gamma) / (p - tempL);
+    temp = decreasing_transformed_eigenvalues[tempL - 1];
     while(temp - gamma < error) {
       if(tempL == 1) {
-        error = (total_variance - Sc2[0] + gamma) / (p - 1);
+        error = (total_variance - decreasing_transformed_eigenvalues[0] + gamma) / (p - 1);
         break;
       }
-      tempSc -= Sc2[tempL - 1];
+      total_transformed_eigenvalues -= decreasing_transformed_eigenvalues[tempL - 1];
       tempL --;
-      error = (total_variance - tempSc + tempL * gamma) / (p - tempL);
-      temp = Sc2[tempL - 1];
+      error = (total_variance - total_transformed_eigenvalues + tempL * gamma) / (p - tempL);
+      temp = decreasing_transformed_eigenvalues[tempL - 1];
     }
-    if(Sc2[0] - gamma < error)
+    if(decreasing_transformed_eigenvalues[0] - gamma < error)
       error = total_variance / p;
   }
   else
     error = total_variance / p;
   
-  vec eigenvalue = max(Sc2 - (error + gamma) * Sct, Sctz);
+  vec eigenvalue = max(decreasing_transformed_eigenvalues - (error + gamma) * one_vector, zero_vector);
   vec eigenvalue2 = eigenvalue + error;
-  mat estimated_covariance = phi * Vc2 * diagmat(eigenvalue / eigenvalue2) * trans(predicted_phi * Vc2);
+  mat estimated_covariance = phi * decreasing_transformed_eigenvectors * diagmat(eigenvalue / eigenvalue2) * trans(predicted_phi * decreasing_transformed_eigenvectors);
   mat prediction = Y * estimated_covariance;
   return List::create(Named("prediction") = prediction,
                       Named("estimated_covariance") = estimated_covariance,

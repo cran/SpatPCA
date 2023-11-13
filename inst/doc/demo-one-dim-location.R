@@ -1,4 +1,4 @@
-## ---- include = FALSE---------------------------------------------------------
+## ----include = FALSE----------------------------------------------------------
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -27,7 +27,7 @@ data.frame(position = position,
 ## -----------------------------------------------------------------------------
 realizations <- rnorm(n = 100, sd = 20) %*% t(true_eigen_fn) + matrix(rnorm(n = 100 * 100), 100, 100)
 
-## ---- animation.hook="gifski"-------------------------------------------------
+## ----animation.hook="gifski"--------------------------------------------------
 for (i in 1:100) {
   plot(x = position, y = realizations[i, ], ylim = c(-10, 10), ylab = "realization")
 }
@@ -49,7 +49,7 @@ data.frame(position = position,
 ## -----------------------------------------------------------------------------
 realizations <- rnorm(n = 100, sd = 3) %*% t(true_eigen_fn) + matrix(rnorm(n = 100 * 100), 100, 100)
 
-## ---- animation.hook="gifski"-------------------------------------------------
+## ----animation.hook="gifski"--------------------------------------------------
 for (i in 1:100) {
   plot(x = position, y = realizations[i, ], ylim = c(-10, 10), ylab = "realization")
 }
